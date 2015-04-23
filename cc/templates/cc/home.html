@@ -1,0 +1,14 @@
+{% extends 'cc/base.html' %}
+{% load staticfiles %}
+
+{% block tabs %}
+<li class="active"><a href="/">Home</a></li>
+<li><a href="/transactions">View Transactions</a></li>
+{% endblock %}
+
+{% block content %}
+	<div class="starter-template">
+		<h1>Your destination for credit card transactions.</h1>
+		<p class="lead">Merchants submit transactions. Customers access transaction history. We tell you about identity thefts.</p>
+	</div>
+{% endblock content %}

@@ -1,0 +1,10 @@
+body {
+  padding-top: 0px;
+}
+
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.modal-footer {   border-top: 0px; }
