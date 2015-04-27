@@ -4,6 +4,9 @@
 {% block tabs %}
 <li class="active"><a href="/">Home</a></li>
 <li><a href="/transactions">View Transactions</a></li>
+{% for group in groups %}
+<li><a href="/submit-new">Submit a Transaction</a></li>
+{% endfor %}
 {% endblock %}
 
 {% block content %}

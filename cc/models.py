@@ -1,23 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
-# Create your models here.
+from django.core.validators import RegexValidator
 
 class Transaction(models.Model):
-	card_number = models.ForeignKey('Customer')
+	card_number = models.CharField(validators=[RegexValidator(regex='^.{16}$', message='Must be 16 digits', code='nomatch')], max_length=16)
+	customer = models.ForeignKey('Customer', null=True)
 	merchant_id = models.ForeignKey('Merchant')
-	transaction_id = models.CharField(primary_key=True, max_length=10)
+	transaction_id = models.AutoField(primary_key=True)
 	amount = models.FloatField()
 	date = models.DateTimeField(default=timezone.now)
 	safe = models.BooleanField(default=True)
 
 	def __str__(self):
-		return self.transaction_id
+		return str(self.transaction_id)
 
 class Customer(models.Model):
 	user = models.OneToOneField(User)
-	card_number = models.CharField(primary_key=True, max_length=16)
+	card_number = models.CharField(validators=[RegexValidator(regex='^.{16}$', message='Must be 16 digits', code='nomatch')], max_length=16, primary_key=True)
 	zip = models.CharField(max_length=5)
 	city = models.CharField(max_length=50)
 	state = models.CharField(max_length=2)
@@ -31,7 +31,7 @@ class Customer(models.Model):
 
 class Merchant(models.Model):
 	user = models.OneToOneField(User)
-	merchant_id = models.CharField(max_length=10)
+	merchant_id = models.AutoField(primary_key=True)
 	zip = models.CharField(max_length=5)
 	city = models.CharField(max_length=50)
 	state = models.CharField(max_length=2)

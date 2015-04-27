@@ -1,0 +1,39 @@
+{% extends 'cc/base.html' %}
+{% load staticfiles %}
+
+{% block tabs %}
+<li><a href="/">Home</a></li>
+<li class="active"><a href="/transactions">View Transactions</a></li>
+<li><a href="/submit-new">Submit a Transaction</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-8">
+  <h1>Here are your latest transactions.</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Card Number</th>
+        <th>Customer Name</th>
+      </tr>
+    </thead>
+    <tbody>
+	{% for transaction in transactions %}
+      <tr>
+        <td>{{ transaction.date }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>************{{ transaction.card_number.12 }}{{ transaction.card_number.13 }}{{ transaction.card_number.14 }}{{ transaction.card_number.15 }}</td>
+        <td>
+        {% if transaction.customer %}
+        {{ transaction.customer.user.first_name }}  {{ transaction.customer.user.last_name }}
+        {% else %}
+        Unregistered Customer
+        {% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

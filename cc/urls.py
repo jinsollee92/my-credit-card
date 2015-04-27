@@ -6,6 +6,6 @@ urlpatterns = [
 	url(r'login/', views.user_log_in),
 	url(r'logout/', views.user_log_out),
 	url(r'transactions/', views.transactions),
-	url(r'^customer/', views.customer_transaction_list),
-	url(r'^merchant/', views.merchant_transaction_list),
+	url(r'submit-new/', views.submit_transaction),
+	url(r'register/', views.register),
 ]

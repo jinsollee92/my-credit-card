@@ -33,6 +33,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not request.user.is_authenticated %}
+        <li><a href="/register">Register</a></li>
         <li><a href="/login">Log In</a></li>
         {% else %}
         <li><a href="/">Welcome, {{ request.user.first_name}}.</a></li>  
@@ -49,6 +50,7 @@
   {% endblock %}
   
 </div><!-- /.container -->
+
 	<!-- script references -->
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
 		<script src={% static 'js/bootstrap.min.js' %}></script>
