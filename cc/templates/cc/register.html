@@ -1,0 +1,16 @@
+{% extends 'cc/base.html' %}
+{% load staticfiles %}
+
+{% block tabs %}
+<li><a href="/">Home</a></li>
+<li><a href="/transactions">View Transactions</a></li>
+{% endblock %}
+
+{% block content %}
+<div id="register">
+<div class="col-md-6 center-block">
+    <p><a href="/customer-register"><button class="btn btn-primary btn-lg btn-block">Register as a Customer</button></a></p>
+    <p><a href="/merchant-register"><button class="btn btn-primary btn-lg btn-block">Register as a Merchant</button></a></p>
+</div>
+</div>
+{% endblock content %}

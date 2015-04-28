@@ -8,3 +8,7 @@ body {
 }
 
 .modal-footer {   border-top: 0px; }
+
+#register a	 {
+	color: #ffffff; !important;
+}
