@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Transaction, Customer, Merchant
+from .models import Transaction, Customer, Merchant, Block
 
 class TransactionForm(forms.ModelForm):
 
@@ -33,3 +33,9 @@ class MerchantForm(forms.ModelForm):
 	class Meta:
 		model = Merchant
 		fields = ('city', 'state', 'zip', 'country',)
+
+class BlockForm(forms.ModelForm):
+
+	class Meta:
+		model = Block
+		fields = ('merchant',)

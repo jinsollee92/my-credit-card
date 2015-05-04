@@ -11,4 +11,5 @@ urlpatterns = [
 	url(r'merchant-register/', views.merchant_register),
 	url(r'register/', views.register),
 	url(r'fraud-profile/', views.fraud_profile),
+	url(r'block-merchant/', views.block_merchant),
 ]

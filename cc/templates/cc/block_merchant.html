@@ -1,0 +1,29 @@
+{% extends 'cc/base.html' %}
+{% load staticfiles %}
+
+{% block tabs %}
+<li><a href="/">Home</a></li>
+<li><a href="/transactions">View Transactions</a></li>
+<li><a href="/fraud-profile">Your Fraud Profile</a></li>
+<li class="active"><a href="/block-merchant">Block a Merchant</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-6 form-inline">
+<div class="form-group row">
+  <form id="form col-md-2 center-block" method="post">
+  {% csrf_token %}
+  {% for field in form %}
+	<fieldset class="control-group">
+	    <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+	    <div class="controls">
+	        {{ field }}
+	        <p class="help-text">{{ field.help_text }} </p>
+	    </div>
+	</fieldset>
+	{% endfor %}
+    <button class="btn btn-primary btn-lg" type="submit">Block Merchant</button>
+  </form>
+  </div>
+</div>
+{% endblock content %}

@@ -14,6 +14,7 @@ class Transaction(models.Model):
 	safe_size = models.BooleanField(default=True)
 	subscription = models.BooleanField(default=False)
 	suspicious = models.BooleanField(default=False)
+	blocked_merchant = models.BooleanField(default=False)
 
 	def check_size(self):
 		mean = self.customer.mean
@@ -98,4 +99,9 @@ class Merchant(models.Model):
 	def __str__(self):
 		return self.user.first_name+', '+self.city+', '+self.state+' '+self.zip
 
+class Block(models.Model):
+	customer = models.ForeignKey('Customer')
+	merchant = models.ForeignKey('Merchant')
 
+	def __str__(self):
+		return self.customer.user.get_full_name()+' has blocked '+self.merchant.__str__()

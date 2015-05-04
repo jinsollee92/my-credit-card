@@ -5,11 +5,13 @@
 <li><a href="/">Home</a></li>
 <li><a href="/transactions">View Transactions</a></li>
 <li class="active"><a href="/fraud-profile">Your Fraud Profile</a></li>
+<li><a href="/block-merchant">Block a Merchant</a></li>
 {% endblock %}
 
 {% block content %}
 <div class="col-md-8">
   <h1>We have found the following suspicious activities from your credit card history.</h1>
+  <br />
   <br />
   <h4>We found {{ lcount }} transactions that are too large.</h4>
   <table class="table table-hover">
@@ -37,6 +39,7 @@
     </tbody>
   </table>
   <br />
+  <br />
   <h4>We found {{ subcount }} subscriptions.</h4>
     <table class="table table-hover">
     <thead>
@@ -63,6 +66,7 @@
     </tbody>
   </table>
   <br />
+  <br />
   <h4>We flagged {{ suscount }} transactions for low charge amount.</h4>
     <table class="table table-hover">
     <thead>
@@ -84,6 +88,29 @@
         <td>{{ t.merchant_id.city }}</td>
         <td>{{ t.merchant_id.state }}</td>
         <td>{{ t.merchant_id.country }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <br />
+  <br />
+  <h4>You have blocked {{ bcount }} merchants.</h4>
+    <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Merchant</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for b in blocked %}
+      <tr>
+        <td>{{ b.merchant.user.first_name }}</td>
+        <td>{{ b.merchant.city }}</td>
+        <td>{{ b.merchant.state }}</td>
+        <td>{{ b.merchant.country }}</td>
       </tr>
     {% endfor %}
     </tbody>

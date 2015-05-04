@@ -5,8 +5,8 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.utils import timezone
 from django.db.models import Count
-from .models import Transaction, Customer, Merchant
-from .forms import TransactionForm, CustomerUserForm, CustomerForm, MerchantUserForm, MerchantForm
+from .models import Transaction, Customer, Merchant, Block
+from .forms import TransactionForm, CustomerUserForm, CustomerForm, MerchantUserForm, MerchantForm, BlockForm
 
 def home(request):
 	merchant = []
@@ -53,7 +53,7 @@ def customer_transaction_list(request):
 	customer = Customer.objects.get(user=request.user)
 	card_number = customer.card_number
 	transactions = Transaction.objects.filter(card_number=card_number, 
-		safe_size=True, suspicious=False)
+		safe_size=True, suspicious=False, blocked_merchant=False)
 	return render(request, 'cc/customer_transactions.html', {'transactions': transactions})
 
 def merchant_transaction_list(request):
@@ -67,18 +67,18 @@ def submit_transaction(request):
 		if form.is_valid():
 			t = form.save(commit=False)
 			n = form.cleaned_data['card_number']
-			t.merchant_id = Merchant.objects.get(user=request.user)
+			merchant = Merchant.objects.get(user=request.user)
+			t.merchant_id = merchant
 			customer = Customer.objects.get(card_number=n)
 			if customer is not None:
 				t.customer = Customer.objects.get(card_number=n)
 				customer_transactions = Transaction.objects.filter(card_number=n).count()
-				print(customer_transactions)
 				customer.mean = customer.calc_mean(t)
-				print(customer.mean)
 				customer.variance = customer.calc_variance(t)
-				print(customer.variance)
 				customer.stdev = customer.calc_stdev()
-				print(customer.stdev)
+				blocked = Block.objects.get(customer=customer, merchant=merchant)
+				if blocked is not None:
+					t.blocked_merchant = True
 			else:
 				t.customer = null
 			t.date = timezone.now()
@@ -151,6 +151,21 @@ def fraud_profile(request):
 	subcount = subscriptions.count()
 	suspicious_transactions = Transaction.objects.filter(customer=customer, suspicious=True)
 	suscount = suspicious_transactions.count()
+	blocked = Block.objects.filter(customer=customer)
+	bcount = blocked.count()
 	return render(request, 'cc/fraud_profile.html', {'large_transactions': large_transactions, 
 		'lcount': lcount, 'subscriptions': subscriptions, 'subcount': subcount, 
-		'suspicious_transactions': suspicious_transactions, 'suscount': suscount})
+		'suspicious_transactions': suspicious_transactions, 'suscount': suscount,
+		'blocked': blocked, 'bcount': bcount})
+
+def block_merchant(request):
+	if request.method == 'POST':
+		form = BlockForm(request.POST)
+		if form.is_valid():
+			b = form.save(commit=False)
+			b.customer = Customer.objects.get(user=request.user)
+			b.save()
+		return HttpResponseRedirect('/fraud-profile')
+	else:
+		form = BlockForm()
+	return render(request, 'cc/block_merchant.html', {'form': form})
