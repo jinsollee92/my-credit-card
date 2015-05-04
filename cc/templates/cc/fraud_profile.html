@@ -1,0 +1,92 @@
+{% extends 'cc/base.html' %}
+{% load staticfiles %}
+
+{% block tabs %}
+<li><a href="/">Home</a></li>
+<li><a href="/transactions">View Transactions</a></li>
+<li class="active"><a href="/fraud-profile">Your Fraud Profile</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="col-md-8">
+  <h1>We have found the following suspicious activities from your credit card history.</h1>
+  <br />
+  <h4>We found {{ lcount }} transactions that are too large.</h4>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Merchant</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+	{% for t in large_transactions %}
+      <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.merchant_id.user.first_name }}</td>
+        <td>{{ t.merchant_id.city }}</td>
+        <td>{{ t.merchant_id.state }}</td>
+        <td>{{ t.merchant_id.country }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <br />
+  <h4>We found {{ subcount }} subscriptions.</h4>
+    <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Merchant</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for t in subscriptions %}
+      <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.merchant_id.user.first_name }}</td>
+        <td>{{ t.merchant_id.city }}</td>
+        <td>{{ t.merchant_id.state }}</td>
+        <td>{{ t.merchant_id.country }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <br />
+  <h4>We flagged {{ suscount }} transactions for low charge amount.</h4>
+    <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Amount</th>
+        <th>Merchant</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+  {% for t in suspicious_transactions %}
+      <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.merchant_id.user.first_name }}</td>
+        <td>{{ t.merchant_id.city }}</td>
+        <td>{{ t.merchant_id.state }}</td>
+        <td>{{ t.merchant_id.country }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

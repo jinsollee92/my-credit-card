@@ -4,14 +4,17 @@ from django.contrib.auth.models import Group, User
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.utils import timezone
+from django.db.models import Count
 from .models import Transaction, Customer, Merchant
 from .forms import TransactionForm, CustomerUserForm, CustomerForm, MerchantUserForm, MerchantForm
 
 def home(request):
-	groups = []
+	merchant = []
+	customer = []
 	if request.user.is_authenticated():
-		groups = request.user.groups.filter(name="Merchant")
-	return render(request, 'cc/home.html', { 'groups': groups })
+		merchant = request.user.groups.filter(name="Merchant")
+		customer = request.user.groups.filter(name="Customer")
+	return render(request, 'cc/home.html', {'merchant': merchant, 'customer': customer})
 
 def user_log_in(request):
 	context = RequestContext(request)
@@ -49,7 +52,8 @@ def transactions(request):
 def customer_transaction_list(request):
 	customer = Customer.objects.get(user=request.user)
 	card_number = customer.card_number
-	transactions = Transaction.objects.filter(card_number=card_number, safe=True)
+	transactions = Transaction.objects.filter(card_number=card_number, 
+		safe_size=True, suspicious=False)
 	return render(request, 'cc/customer_transactions.html', {'transactions': transactions})
 
 def merchant_transaction_list(request):
@@ -63,17 +67,24 @@ def submit_transaction(request):
 		if form.is_valid():
 			t = form.save(commit=False)
 			n = form.cleaned_data['card_number']
-			print(n)
-			t.safe = True
 			t.merchant_id = Merchant.objects.get(user=request.user)
-			print('merchant found')
 			customer = Customer.objects.get(card_number=n)
-			print('customer query')
 			if customer is not None:
 				t.customer = Customer.objects.get(card_number=n)
+				customer_transactions = Transaction.objects.filter(card_number=n).count()
+				print(customer_transactions)
+				customer.mean = customer.calc_mean(t)
+				print(customer.mean)
+				customer.variance = customer.calc_variance(t)
+				print(customer.variance)
+				customer.stdev = customer.calc_stdev()
+				print(customer.stdev)
 			else:
 				t.customer = null
 			t.date = timezone.now()
+			t.safe_size = t.check_size()
+			t.subscription = t.check_subscription()
+			t.suspicious = t.check_suspicious()
 			t.save()
 		return HttpResponseRedirect('/transactions')
 	else:
@@ -104,7 +115,8 @@ def customer_register(request):
 	else:
 		user_form = CustomerUserForm()
 		customer_form = CustomerForm()
-	return render_to_response('cc/customer_register.html', {'user_form': user_form, 'customer_form': customer_form}, context)
+	return render_to_response('cc/customer_register.html', 
+		{'user_form': user_form, 'customer_form': customer_form}, context)
 
 def merchant_register(request):
 	context = RequestContext(request)
@@ -128,4 +140,17 @@ def merchant_register(request):
 	else:
 		user_form = MerchantUserForm()
 		merchant_form = MerchantForm()
-	return render_to_response('cc/merchant_register.html', {'user_form': user_form, 'merchant_form': merchant_form}, context)
+	return render_to_response('cc/merchant_register.html', 
+		{'user_form': user_form, 'merchant_form': merchant_form}, context)
+
+def fraud_profile(request):
+	customer = Customer.objects.get(user=request.user)
+	large_transactions = Transaction.objects.filter(customer=customer, safe_size=False)
+	lcount = large_transactions.count()
+	subscriptions = Transaction.objects.filter(customer=customer, subscription=True)
+	subcount = subscriptions.count()
+	suspicious_transactions = Transaction.objects.filter(customer=customer, suspicious=True)
+	suscount = suspicious_transactions.count()
+	return render(request, 'cc/fraud_profile.html', {'large_transactions': large_transactions, 
+		'lcount': lcount, 'subscriptions': subscriptions, 'subcount': subcount, 
+		'suspicious_transactions': suspicious_transactions, 'suscount': suscount})

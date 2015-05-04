@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.validators import RegexValidator
+from django.db.models import Avg, StdDev, Count
 
 class Transaction(models.Model):
 	card_number = models.CharField(validators=[RegexValidator(regex='^.{16}$', message='Must be 16 digits', code='nomatch')], max_length=16)
@@ -10,7 +11,30 @@ class Transaction(models.Model):
 	transaction_id = models.AutoField(primary_key=True)
 	amount = models.FloatField()
 	date = models.DateTimeField(default=timezone.now)
-	safe = models.BooleanField(default=True)
+	safe_size = models.BooleanField(default=True)
+	subscription = models.BooleanField(default=False)
+	suspicious = models.BooleanField(default=False)
+
+	def check_size(self):
+		mean = self.customer.mean
+		stdev = self.customer.stdev
+		if self.amount > (mean+stdev):
+			return False
+		else:
+			return True
+
+	def check_subscription(self):
+		transactions = Transaction.objects.filter(card_number=self.card_number, amount=self.amount)
+		if transactions.count() >= 3:
+			return True
+		else:
+			return False
+
+	def check_suspicious(self):
+		if self.amount < 1:
+			return True
+		else:
+			return False
 
 	def __str__(self):
 		return str(self.transaction_id)
@@ -22,6 +46,40 @@ class Customer(models.Model):
 	city = models.CharField(max_length=50)
 	state = models.CharField(max_length=2)
 	country = models.CharField(max_length=50)
+	mean = models.FloatField(default=0)
+	variance = models.FloatField(default=0)
+	stdev = models.FloatField(default=0)
+
+	def init_stats(self):
+		transactions = Transaction.objects.filter(customer=self)
+		count = transactions.count()
+		mean = 0
+		variance = 0
+		for t in transactions:
+			mean += t.amount
+		mean = mean / float(count)
+		self.mean = mean
+		for t in transactions:
+			variance += (t.amount-mean)**2
+		self.variance = variance
+		self.stdev = variance**(1/2.0)
+
+	def calc_mean(self, new_transaction):
+		transactions = Transaction.objects.filter(customer=self).count()
+		if transactions > 1:
+			return ((self.mean*transactions)+new_transaction.amount) / (transactions+1)
+		else:
+			return new_transaction.amount
+
+	def calc_variance(self, new_transaction):
+		transactions = Transaction.objects.filter(customer=self).count()
+		if transactions > 1:
+			return self.variance + (new_transaction.amount**2)
+		else:
+			return new_transaction.amount**2
+
+	def calc_stdev(self):
+		return self.variance**(1/2.0)		
 
 	def __str__(self):
 		return self.user.first_name+" "+self.user.last_name
@@ -38,9 +96,6 @@ class Merchant(models.Model):
 	country = models.CharField(max_length=50)
 
 	def __str__(self):
-		return self.user.first_name
-
-	def __unicode__(self):
-		return self.user.username
+		return self.user.first_name+', '+self.city+', '+self.state+' '+self.zip
 
 
