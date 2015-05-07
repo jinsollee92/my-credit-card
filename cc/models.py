@@ -37,6 +37,9 @@ class Transaction(models.Model):
 		else:
 			return False
 
+	def masked_card_number(self):
+		return '************'+self.card_number[12:16]
+
 	def __str__(self):
 		return str(self.transaction_id)
 

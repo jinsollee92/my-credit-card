@@ -24,7 +24,7 @@
       <tr>
         <td>{{ transaction.date }}</td>
         <td>{{ transaction.amount }}</td>
-        <td>************{{ transaction.card_number.12 }}{{ transaction.card_number.13 }}{{ transaction.card_number.14 }}{{ transaction.card_number.15 }}</td>
+        <td>{{ transaction.masked_card_number }}</td>
         <td>
         {% if transaction.customer %}
         {{ transaction.customer.user.first_name }}  {{ transaction.customer.user.last_name }}
