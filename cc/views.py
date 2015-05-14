@@ -52,8 +52,7 @@ def transactions(request):
 def customer_transaction_list(request):
 	customer = Customer.objects.get(user=request.user)
 	card_number = customer.card_number
-	transactions = Transaction.objects.filter(card_number=card_number, 
-		safe_size=True, suspicious=False, blocked_merchant=False).order_by('-date')
+	transactions = Transaction.objects.filter(card_number=card_number, blocked_merchant=False).order_by('-date')
 	return render(request, 'cc/customer_transactions.html', {'transactions': transactions})
 
 def merchant_transaction_list(request):
