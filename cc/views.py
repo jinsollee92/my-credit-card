@@ -53,12 +53,12 @@ def customer_transaction_list(request):
 	customer = Customer.objects.get(user=request.user)
 	card_number = customer.card_number
 	transactions = Transaction.objects.filter(card_number=card_number, 
-		safe_size=True, suspicious=False, blocked_merchant=False)
+		safe_size=True, suspicious=False, blocked_merchant=False).order_by('-date')
 	return render(request, 'cc/customer_transactions.html', {'transactions': transactions})
 
 def merchant_transaction_list(request):
 	merchant = Merchant.objects.get(user=request.user)
-	transactions = Transaction.objects.filter(merchant_id=merchant)
+	transactions = Transaction.objects.filter(merchant_id=merchant).order_by('-date')
 	return render(request, 'cc/merchant_transactions.html', {'transactions': transactions})
 
 def submit_transaction(request):
@@ -73,12 +73,15 @@ def submit_transaction(request):
 			if customer is not None:
 				t.customer = Customer.objects.get(card_number=n)
 				customer_transactions = Transaction.objects.filter(card_number=n).count()
-				customer.mean = customer.calc_mean(t)
-				customer.variance = customer.calc_variance(t)
+				amt = t.amount
+				customer.init_stats()
+				customer.mean = customer.calc_mean(amt)
+				customer.variance = customer.calc_variance(amt)
 				customer.stdev = customer.calc_stdev()
-				blocked = Block.objects.get(customer=customer, merchant=merchant)
-				if blocked is not None:
-					t.blocked_merchant = True
+				t.check_blocked()
+				if t.blocked_merchant == True:
+					b = Block.objects.get(customer=customer, merchant=merchant)
+					b.count()
 			else:
 				t.customer = null
 			t.date = timezone.now()
@@ -145,11 +148,11 @@ def merchant_register(request):
 
 def fraud_profile(request):
 	customer = Customer.objects.get(user=request.user)
-	large_transactions = Transaction.objects.filter(customer=customer, safe_size=False)
+	large_transactions = Transaction.objects.filter(customer=customer, safe_size=False).order_by('-date')
 	lcount = large_transactions.count()
-	subscriptions = Transaction.objects.filter(customer=customer, subscription=True)
+	subscriptions = Transaction.objects.filter(customer=customer, subscription=True).order_by('-date')
 	subcount = subscriptions.count()
-	suspicious_transactions = Transaction.objects.filter(customer=customer, suspicious=True)
+	suspicious_transactions = Transaction.objects.filter(customer=customer, suspicious=True).order_by('-date')
 	suscount = suspicious_transactions.count()
 	blocked = Block.objects.filter(customer=customer)
 	bcount = blocked.count()
