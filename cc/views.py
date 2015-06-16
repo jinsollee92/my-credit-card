@@ -57,7 +57,7 @@ def customer_transaction_list(request):
 
 def merchant_transaction_list(request):
 	merchant = Merchant.objects.get(user=request.user)
-	transactions = Transaction.objects.filter(merchant_id=merchant).order_by('-date')
+	transactions = Transaction.objects.filter(merchant_id=merchant, blocked_merchant=False).order_by('-date')
 	return render(request, 'cc/merchant_transactions.html', {'transactions': transactions})
 
 def submit_transaction(request):

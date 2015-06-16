@@ -135,7 +135,7 @@ class Block(models.Model):
 	transactions = models.IntegerField(default=0)
 
 	def count(self):
-		t = Transaction.object.filter(customer=self.customer, merchant=self.merchant).count()
+		t = Transaction.objects.filter(customer=self.customer, merchant_id=self.merchant).count()
 		self.transactions = t
 
 	def __str__(self):
